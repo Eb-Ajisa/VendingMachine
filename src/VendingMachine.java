@@ -190,12 +190,15 @@ public class VendingMachine {
 	 *         into the vending machine to make the purchase. Also returns false if
 	 *         the code is for an empty slot.
 	 */
+
+	
 	public boolean makePurchase(String code) {
 		boolean returnCode = false;
 		VendingMachineItem item = getItem(code);
 		if ((item != null) && (this.balance >= item.getPrice())) {
 			removeItem(code);
-			this.balance -= item.getPrice();
+		// INJECTED FAULT FOR TEST VALIDATION
+			this.balance += item.getPrice();
 			returnCode = true;
 		}
 		return returnCode;
