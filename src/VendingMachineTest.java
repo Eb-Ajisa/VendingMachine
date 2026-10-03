@@ -1,5 +1,7 @@
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,12 +49,10 @@ public class VendingMachineTest {
         vendingMachine.addItem(vendingMachineItem1, "A");
         vendingMachine.addItem(vendingMachineItem2, "B");
         vendingMachine.addItem(vendingMachineItem3, "C");
-        vendingMachine.addItem(vendingMachineItem4, "D");
 
         assertEquals(vendingMachineItem1, vendingMachine.getItem("A"));
         assertEquals(vendingMachineItem2, vendingMachine.getItem("B"));
         assertEquals(vendingMachineItem3, vendingMachine.getItem("C"));
-        assertEquals(vendingMachineItem4, vendingMachine.getItem("D"));
 
     }
 
@@ -74,12 +74,30 @@ public class VendingMachineTest {
 
     @Test
     void testGetBalance() {
+        vendingMachine.insertMoney(5.0);
 
+        assertEquals(5.0, vendingMachine.getBalance(), 0.01);
     }
 
     @Test
     void testGetItem() {
+        vendingMachine.addItem(vendingMachineItem1, "A");
+        vendingMachine.addItem(vendingMachineItem2, "B");
+        vendingMachine.addItem(vendingMachineItem3, "C");
+        vendingMachine.addItem(vendingMachineItem4, "D");
 
+        assertEquals(vendingMachineItem1, vendingMachine.getItem("A"));
+        assertEquals(vendingMachineItem2, vendingMachine.getItem("B"));
+        assertEquals(vendingMachineItem3, vendingMachine.getItem("C"));
+        assertEquals(vendingMachineItem4, vendingMachine.getItem("D"));
+
+    }
+
+    @Test 
+    void InvalidCodeErrorGetItem() {
+        assertThrows(VendingMachineException.class, () -> {
+            vendingMachine.getItem("E");
+        });
     }
 
     @ParameterizedTest
@@ -87,7 +105,7 @@ public class VendingMachineTest {
     void testInsertMoney(double doubles) {
         vendingMachine.insertMoney(doubles);
 
-        assertEquals(5.0, vendingMachine.getBalance(), 0.01);
+        assertEquals(doubles, vendingMachine.getBalance(), 0.01);
     }
 
     @ParameterizedTest
@@ -100,16 +118,73 @@ public class VendingMachineTest {
 
     @Test
     void testMakePurchase() {
+        vendingMachine.addItem(vendingMachineItem1, "A");
+        vendingMachine.addItem(vendingMachineItem2, "B");
+        vendingMachine.insertMoney(5.0);
 
+        vendingMachine.makePurchase("A");
+
+        assertEquals(null, vendingMachine.getItem("A"));
+        assertEquals(4.0, vendingMachine.getBalance(), 0.01);
+
+    }
+
+    @Test 
+    void EmptySlotErrorMakePurchase() {
+        vendingMachine.addItem(vendingMachineItem1, "A");
+        vendingMachine.addItem(vendingMachineItem2, "B");
+        vendingMachine.insertMoney(5.0);
+
+        vendingMachine.makePurchase("A");
+
+
+        assertFalse(vendingMachine.makePurchase("A"));
+    }
+
+    @Test 
+    void InsufficientFundsErrorMakePurchase() {
+        vendingMachine.addItem(vendingMachineItem1, "A");
+        vendingMachine.addItem(vendingMachineItem6, "D");
+        vendingMachine.insertMoney(5);
+        
+        assertTrue(vendingMachine.makePurchase("A"));
+        assertFalse(vendingMachine.makePurchase("D"));
+        assertEquals(4, vendingMachine.getBalance(), 0.01);
     }
 
     @Test
     void testRemoveItem() {
+        vendingMachine.addItem(vendingMachineItem1, "A");
+        vendingMachine.removeItem("A");
 
+        assertEquals(null, vendingMachine.getItem("A"));
+
+    }
+
+    @Test 
+    void EmptySlotErrorRemoveItem() {
+        vendingMachine.addItem(vendingMachineItem1, "A");
+        vendingMachine.removeItem("A");
+
+        assertThrows(VendingMachineException.class, () -> {
+            vendingMachine.removeItem("A");
+        });
+    }
+
+    @Test 
+    void InvalidCodeErrorRemoveItem() {
+        assertThrows(VendingMachineException.class, () -> {
+            vendingMachine.removeItem("E");
+        });
     }
 
     @Test
     void testReturnChange() {
+        vendingMachine.insertMoney(5.0);
+
+        assertEquals(5.0, vendingMachine.returnChange(), 0.01);
+        assertEquals(0.0, vendingMachine.getBalance(), 0.01);
 
     }
+
 }
